@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026重庆中考志愿填报推荐系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4ecf7 100%);
+    color: #222;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  header {
+    background: linear-gradient(135deg, #c0392b, #8e2418);
+    color: #fff;
+    padding: 24px 28px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.25);
+  }
+  header h1 { font-size: 24px; margin-bottom: 6px; }
+  header p { font-size: 13px; opacity: 0.95; }
+  .form-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 22px;
+  }
+  .form-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+  .field { flex: 1; min-width: 200px; }
+  .field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #d4d8df;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: #c0392b;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
+  }
+  button.primary {
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    padding: 11px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  button.primary:hover { background: #a53321; transform: translateY(-1px); }
+  button.primary:active { transform: translateY(0); }
+
+  .results { display: none; }
+  .results.visible { display: block; }
+  .summary-bar {
+    background: #fff;
+    padding: 16px 22px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    border-left: 4px solid #c0392b;
+  }
+  .summary-bar .stat { font-size: 13px; color: #555; }
+  .summary-bar .stat b { color: #c0392b; font-size: 16px; margin-left: 4px; }
+
+  .batch-section {
+    background: #fff;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .batch-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .batch-title .tag {
+    background: #c0392b;
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .slot {
+    border-left: 4px solid #ddd;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: #fafbfc;
+    border-radius: 0 8px 8px 0;
+  }
+  .slot.chong { border-left-color: #e67e22; }
+  .slot.wen { border-left-color: #27ae60; }
+  .slot.bao { border-left-color: #2980b9; }
+
+  .slot-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .slot-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 4px;
+    color: #fff;
+  }
+  .slot.chong .slot-badge { background: #e67e22; }
+  .slot.wen .slot-badge { background: #27ae60; }
+  .slot.bao .slot-badge { background: #2980b9; }
+  .slot-code { color: #888; font-size: 13px; }
+  .slot-rule { color: #999; font-size: 12px; margin-left: auto; }
+
+  .school-card {
+    background: #fff;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #eaecef;
+    transition: all 0.15s;
+  }
+  .school-card.primary {
+    border-color: #c0392b;
+    background: #fff8f7;
+    border-width: 1.5px;
+  }
+  .school-card.backup { opacity: 0.85; }
+  .school-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .school-name .pri-flag {
+    background: #c0392b;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .school-name .bk-flag {
+    background: #95a5a6;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .school-name .seven { background: #f39c12; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .school-name .conf-h { background: #27ae60; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+  .school-name .conf-m { background: #f39c12; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+  .school-name .conf-l { background: #e74c3c; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+  .school-meta {
+    font-size: 12.5px;
+    color: #777;
+    margin: 5px 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .scores-strip {
+    font-size: 12px;
+    color: #555;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    background: #f5f5f7;
+    padding: 5px 9px;
+    border-radius: 5px;
+    margin: 5px 0;
+    display: inline-block;
+  }
+  .reason {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    background: #f8f9fa;
+    padding: 8px 11px;
+    border-radius: 6px;
+    margin-top: 6px;
+    border-left: 3px solid #c0392b;
+  }
+  .school-card.backup .reason { border-left-color: #95a5a6; }
+  .reason b { color: #c0392b; }
+  .school-card.backup .reason b { color: #555; }
+  .tags { margin-top: 6px; }
+  .tag-pill {
+    display: inline-block;
+    background: #fff5d6;
+    color: #8b6914;
+    font-size: 11.5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-right: 5px;
+    margin-bottom: 3px;
+  }
+  .tag-pill.caution { background: #ffe5e5; color: #b03030; }
+  .tag-pill.flagship { background: #e8f3ff; color: #1f5fa8; }
+  .tag-pill.value { background: #e6f7ed; color: #1e7e3a; }
+
+  .empty-slot {
+    color: #aaa;
+    font-style: italic;
+    font-size: 13px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .footer-note {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    color: #6d4c00;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+  .footer-note h4 { margin-bottom: 6px; color: #8a5a00; }
+  .footer-note .conf-legend { display: inline-flex; gap: 4px; align-items: center; margin-right: 14px; }
+  .footer-note ul { margin-left: 20px; margin-top: 4px; }
+  .footer-note li { margin: 3px 0; }
+
+  .compare-block {
+    background: #fff7e8;
+    border-left: 3px solid #f39c12;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0 4px;
+    font-size: 13px;
+    color: #5a4209;
+  }
+  .compare-block h5 {
+    color: #b67400;
+    font-size: 13px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-block h5::before { content: "⚖"; font-size: 14px; }
+
+  .reachable-list {
+    background: #f5f7fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+  }
+  .reachable-header {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .reachable-header .toggle {
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 11.5px;
+    user-select: none;
+  }
+  .reachable-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .reachable-table th {
+    text-align: left;
+    color: #888;
+    font-weight: 500;
+    padding: 4px 6px;
+    border-bottom: 1px solid #e1e4e8;
+    font-size: 11px;
+  }
+  .reachable-table td {
+    padding: 5px 6px;
+    border-bottom: 1px dashed #ecedef;
+  }
+  .reachable-table tr:last-child td { border-bottom: none; }
+  .reachable-table tr.recommended {
+    background: #fff8f7;
+  }
+  .reachable-table .r-name {
+    font-weight: 500;
+    color: #222;
+  }
+  .reachable-table .r-name.recommended::before {
+    content: "★ ";
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .reachable-table .r-est {
+    color: #c0392b;
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  .reachable-table .r-history {
+    color: #777;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 11px;
+  }
+  .reachable-table .r-region-本区 { color: #27ae60; font-size: 10.5px; font-weight: 600; }
+  .reachable-table .r-region-邻区 { color: #f39c12; font-size: 10.5px; font-weight: 600; }
+  .reachable-table .r-region-远区 { color: #e74c3c; font-size: 10.5px; font-weight: 600; }
+  .reachable-table .r-conf {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #fff;
+    font-weight: 500;
+  }
+  .reachable-empty {
+    color: #aaa;
+    font-style: italic;
+    font-size: 12px;
+    padding: 6px;
+    text-align: center;
+  }
+
+  .warning-block {
+    background: #fde8e8;
+    border-left: 3px solid #c0392b;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #6e1a10;
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 19px; }
+    .container { padding: 12px; }
+    .form-card, .batch-section { padding: 16px; }
+    .field { min-width: 100%; }
+    .school-meta { gap: 8px; font-size: 11.5px; }
+    .slot-rule { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>2026 重庆中考志愿填报推荐</h1>
+    <p>按"冲5+稳5+保"逻辑，结合区域和学校风评，输出推荐填报和备选填报</p>
+  </header>
+
+  <div class="form-card">
+    <div class="form-row">
+      <div class="field">
+        <label>预估中考分数 (750分制，含体育)</label>
+        <input type="number" id="score" placeholder="例：680" min="300" max="750" step="0.5">
+      </div>
+      <div class="field">
+        <label>所在区县</label>
+        <select id="district">
+          <option value="">请选择…</option>
+          <optgroup label="主城九区">
+            <option>渝中区</option>
+            <option>江北区</option>
+            <option>沙坪坝区</option>
+            <option>九龙坡区</option>
+            <option>南岸区</option>
+            <option>大渡口区</option>
+            <option>北碚区</option>
+            <option>渝北区</option>
+            <option>巴南区</option>
+          </optgroup>
+          <optgroup label="两江/高新">
+            <option>两江新区</option>
+            <option>高新区</option>
+          </optgroup>
+          <optgroup label="渝西联招区">
+            <option>江津区</option>
+            <option>璧山区</option>
+            <option>永川区</option>
+          </optgroup>
+          <optgroup label="非联招参与区(参考)">
+            <option>合川区</option>
+            <option>长寿区</option>
+            <option>大足区</option>
+            <option>铜梁区</option>
+            <option>荣昌区</option>
+            <option>万盛经开区</option>
+            <option>其他/不限</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>区域偏好</label>
+        <select id="prefer">
+          <option value="all">全市无所谓</option>
+          <option value="local" selected>优先本区</option>
+          <option value="local_strict">只本区+邻区</option>
+        </select>
+      </div>
+      <div class="field" style="flex: 0 0 auto;">
+        <label style="visibility:hidden">_</label>
+        <button class="primary" onclick="recommend()">生成 5+5 推荐</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results" class="results"></div>
+
+  <div class="footer-note">
+    <h4>📌 数据与免责说明</h4>
+    <div style="margin: 6px 0 10px;">
+      <span class="conf-legend"><span class="conf-h" style="background:#27ae60;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;">H</span> 多源验证</span>
+      <span class="conf-legend"><span class="conf-m" style="background:#f39c12;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;">M</span> 单一公开来源</span>
+      <span class="conf-legend"><span class="conf-l" style="background:#e74c3c;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;">L</span> 论坛/家长口径</span>
+    </div>
+    <ul>
+      <li>分数线为<b>联招区统招线</b>（不含指标到校、不含艺体提前批），总分750分制</li>
+      <li><b>趋势↑↓→</b>：根据近3-4年联招线斜率自动计算。↑表示近年涨(预估线已含+趋势修正)，↓表示近年跌(预估线已含-趋势修正)，→表示平稳</li>
+      <li><b>关于指标到校</b>：市级重点中学约70%名额走指标到校(4-5月一诊+综合素质评定)，仅30%走联招统招。若你已被指标到校签约，不能再填联招志愿；本系统只服务于<b>走联招统招的考生</b>。指标到校趋势隐含在联招线的5年变化里——若一所学校近年指标签得多，联招线会被推高(系统已通过趋势修正反映)</li>
+      <li>2026年联招学校教委口径为<b>"约100所"</b>，最终名单以2026年5月教委正式公告为准；本系统以2025年103所(一批85+二批18)为基线</li>
+      <li>中尾部学校历年统招线在公开渠道本身就稀疏；显示 "—" 表示该年数据缺失，不代表学校未招生</li>
+      <li>"王牌班"风评信息综合自家长帮、知乎、勤思优才等2024-2025年公开讨论，<b>每年班型设置会微调，以校方当年公告为准</b></li>
+      <li>本系统仅供参考，最终填报请以官方公告、学校宣讲会和班主任建议为准</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+ * 学校数据库
+ *   - 分数线为联招统招线(总分750)
+ *   - confidence: H 多源验证 / M 单一来源 / L 论坛家长口径
+ *   - flagship: 是否七龙珠四小金刚等头部
+ * ============================================================ */
+const SCHOOLS = [
+  // ============ 七龙珠 + 头部直属校 ============
+  { name: "巴蜀中学(张家花园本部)", district: "渝中区", tier: 1, flagship: "七龙珠", referenceFamily: "巴蜀",
+    scores: { 2021: 691, 2022: 688.5, 2023: 692, 2024: 679, 2025: 680 }, conf: "H",
+    flagshipClass: "清北班(16班外招)/火箭班/实验班",
+    classDetail: "清北班中考签约+高一高二动态末位淘汰；2024年清北94人(全市第一)；竞赛金牌全市第一；重本率≈100%",
+    tags: ["七龙珠之首", "竞赛全市第一", "清北94人/年"],
+    cautions: ["高压精英化", "实行淘汰制"] },
+
+  { name: "重庆八中(沙坪坝校区)", district: "沙坪坝区", tier: 1, flagship: "七龙珠", referenceFamily: "八中",
+    scores: { 2021: 694.5, 2022: 697, 2023: 697, 2024: 686, 2025: 690.5 }, conf: "H",
+    flagshipClass: "宏志班(初中顶尖生签约直升)/砺新班",
+    classDetail: "宏志班：初二期末年级前80名可签约直升，约2个班；2024年清北逾100人(含渝北)，强基48人全市C9第一；一本率≈100%",
+    tags: ["管得最严", "全面发展", "强基全市第一"],
+    cautions: ["作业量大"] },
+
+  { name: "重庆八中(渝北校区)", district: "渝北区", tier: 1, flagship: "七龙珠", referenceFamily: "八中",
+    scores: { 2021: 691.5, 2022: 695, 2023: 696.5, 2024: 683, 2025: 691.5 }, conf: "H",
+    flagshipClass: "渝北校区各班，与沙坪坝本部统一教研师资",
+    classDetail: "2025年录取线首次反超沙坪坝0.5分；高考成绩与本部同步统计；清北产出含并本部共逾100人/年",
+    tags: ["新校区生源扩容", "硬件好", "和本部教研一体"],
+    cautions: [] },
+
+  { name: "重庆一中(沙坪坝本部)", district: "沙坪坝区", tier: 1, flagship: "七龙珠", referenceFamily: "一中",
+    scores: { 2022: 692.5, 2023: 691, 2024: 679.5, 2025: 684.5 }, conf: "H",
+    flagshipClass: "清北班(约2班)→实验班(约4班)→平行班→国际班，共12班",
+    classDetail: "679+可入平行班，平行前200推进实验班；2024年清北43人(北大22+清华21)；物理竞赛全市前列；一本率≈100%",
+    tags: ["竞赛硬(物理)", "理科强", "中庸不张扬"],
+    cautions: [] },
+
+  { name: "南开中学(沙坪坝)", district: "沙坪坝区", tier: 1, flagship: "七龙珠", referenceFamily: "南开",
+    scores: { 2022: 695.5, 2023: 695, 2024: 681, 2025: 682.5 }, conf: "H",
+    flagshipClass: "5班·18班(外招清北班)；区县前10名可签清北班",
+    classDetail: "进入后不淘汰(与巴蜀最大区别)，氛围宽松；2024年清北约75人；保送路径成熟(外语类/艺术类)；文科底蕴市内最强",
+    tags: ["文科底蕴", "民主包容", "保送出国多"],
+    cautions: [] },
+
+  { name: "西南大学附属中学(本部)", district: "北碚区", tier: 1, flagship: "七龙珠", referenceFamily: "西附",
+    scores: { 2022: 682.5, 2023: 690, 2024: 673, 2025: 668.5 }, conf: "H",
+    flagshipClass: "创新实验班(4个班，顶尖生优先，实行动态淘汰制)",
+    classDetail: "中考700+或开学分班考前列进创新班；西大校长任名誉班主任；2024年清北约35人；生物竞赛全市第一；素质教育氛围最宽松的七龙珠",
+    tags: ["素质教育", "轻松活泼", "百花齐放"],
+    cautions: ["生物竞赛强，理科个别学科产出有限"] },
+
+  { name: "重庆十一中(本部)", district: "南岸区", tier: 1, flagship: "四小金刚",
+    scores: { 2022: 671, 2023: 670, 2024: 660, 2025: 663 }, conf: "M",
+    flagshipClass: "海航班(全国14所航校综合排名第一)+国科大创新实验班",
+    classDetail: "海航班：入班即获清北降60分录取资格；国科大班：中考70%+面试30%全市选拔约40人；2024年清北8人；重本率约70%",
+    tags: ["海航班全国第一", "国科大班", "清北稳定"],
+    cautions: [] },
+
+  { name: "重庆十八中", district: "江北区", tier: 1, flagship: "四小金刚",
+    scores: { 2022: 671.5, 2023: 668, 2024: 658, 2025: 660 }, conf: "M",
+    flagshipClass: "砺新班(2+4贯通，指标到校直升为主)",
+    classDetail: "砺新班通过指标到校保送为主要路径；2023年清北12-14人；重本率89.72%；性价比四小金刚中最高",
+    tags: ["砺新班保送主力", "性价比高"],
+    cautions: [] },
+
+  { name: "求精中学", district: "渝中区", tier: 1,
+    scores: { 2021: 666, 2022: 664.5, 2023: 660, 2024: 650, 2025: 658 }, conf: "M",
+    flagshipClass: "未来实验班(小班精英化，约1-2班)",
+    classDetail: "小规模精英培养，2010-2024共26人清北；体量约400人/届，一本率约80%；渝中老牌，位置方便",
+    tags: ["渝中老牌", "小而精"],
+    cautions: ["体量小,资源不如七龙珠"] },
+
+  { name: "重庆育才中学(本部)", district: "九龙坡区", tier: 1, flagship: "四小金刚", referenceFamily: "育才",
+    scores: { 2021: 679.5, 2022: 681.5, 2023: 681.5, 2024: 668.5, 2025: 671.5 }, conf: "H",
+    flagshipClass: "实验班(约4班，680+优先)+平行班",
+    classDetail: "育才系初中前700-800可直升本部实验班；2024年清北约20-25人；重本率约75%；本部生源体系稳定，口碑扎实",
+    tags: ["四小金刚", "本部生源稳"],
+    cautions: ["成功学校是分校,水平有差距"] },
+
+  { name: "重庆一外(外国语学校本部)", district: "九龙坡区", tier: 1, referenceFamily: "一外",
+    scores: { 2022: 684, 2023: 687.5, 2024: 672, 2025: 671.5 }, conf: "H",
+    flagshipClass: "保送班(外语类保送)+高考班+国际班",
+    classDetail: "保送路径成熟：约20-25人/年保送清北/外语类名校；高考班重本率约85%；外语优势国内顶尖，六语种教学",
+    tags: ["外语顶尖", "保送出口好"],
+    cautions: ["理科竞赛不如七龙珠"] },
+
+  // ============ 巴蜀体系分校 ============
+  { name: "鲁能巴蜀中学", district: "江北区", tier: 1, flagship: "巴蜀体系",
+    scores: { 2021: 683.5, 2023: 686.5, 2024: 671, 2025: 674.5 }, conf: "H",
+    flagshipClass: "理创实验班(顶尖)+鲁能实验班(次梯队)",
+    classDetail: "理创班选拔入学，巴蜀本部五统一（教学计划/师资/教研/考试/管理）；2024年清北5-6人；重本率约65%；民办，年学费约3-5万",
+    tags: ["巴蜀分校口碑最稳", "本部教研一体"],
+    cautions: ["民办,学费高","清北产出与本部差距大(本部60-70人 vs 鲁巴5-6人)"] },
+
+  { name: "巴蜀科学城中学", district: "高新区", tier: 1, flagship: "巴蜀体系",
+    scores: { 2023: 690.5, 2024: 668, 2025: 673.5 }, conf: "M",
+    flagshipClass: "巴蜀科学城清北班",
+    classDetail: "新校区,享巴蜀本部教研支持",
+    tags: ["巴蜀新分校", "硬件好"],
+    cautions: ["创办时间短,口碑待验证"] },
+
+  { name: "重庆璧山巴蜀中学", district: "璧山区", tier: 1, flagship: "巴蜀体系",
+    scores: { 2024: 645, 2025: 648 }, conf: "L",
+    flagshipClass: "璧巴清北班",
+    classDetail: "2024新增联招校",
+    tags: ["新建联招校"],
+    cautions: ["数据稀缺,谨慎选择"] },
+
+  { name: "巴蜀云阳分校", district: "渝北区", tier: 1, flagship: "巴蜀体系",
+    referenceSchool: "鲁能巴蜀中学", referenceOffset: -25,
+    scores: {}, conf: "L",
+    flagshipClass: "云阳清北班",
+    classDetail: "公开数据极少,按巴蜀分校中较弱的鲁能-25估算(远郊生源更弱)",
+    tags: ["巴蜀挂牌", "远郊"],
+    cautions: ["公开讨论稀少", "估算粗糙,务必交叉验证"] },
+
+  { name: "重庆八中宏帆中学", district: "渝北区", tier: 1, flagship: "八中体系",
+    referenceSchool: "重庆八中(沙坪坝校区)", referenceOffset: -30,
+    scores: {}, conf: "L",
+    flagshipClass: "宏帆实验班",
+    classDetail: "2021年剥离八中,按本部-30估算(师资削弱后)",
+    tags: ["短期口碑尚在"],
+    cautions: ["公参民改革后红利消退", "新生宁选本部"] },
+
+  { name: "重庆八中树人中学", district: "渝北区", tier: 1, flagship: "八中体系",
+    referenceSchool: "重庆八中(沙坪坝校区)", referenceOffset: -40,
+    scores: {}, conf: "L",
+    flagshipClass: "树人实验班",
+    classDetail: "民办分校,按本部-40估算",
+    tags: ["民办"],
+    cautions: ["与本部差距大"] },
+
+  { name: "八中科学城中学", district: "高新区", tier: 1, flagship: "八中体系",
+    scores: { 2024: 642, 2025: 645 }, conf: "M",
+    flagshipClass: "科学城实验班",
+    classDetail: "新校区",
+    tags: ["新校区"],
+    cautions: ["创办时间短"] },
+
+  // ============ 育才/南开/西附 分校 ============
+  { name: "育才科学城中学", district: "高新区", tier: 1, flagship: "育才体系",
+    scores: { 2024: 658, 2025: 661 }, conf: "M",
+    flagshipClass: "育才科学城实验班",
+    classDetail: "享育才本部师资",
+    tags: ["育才分校"],
+    cautions: [] },
+
+  { name: "育才成功学校(大公馆/九龙园)", district: "九龙坡区", tier: 1, flagship: "育才体系",
+    scores: {}, conf: "L",
+    flagshipClass: "成功实验班",
+    classDetail: "育才系初中前1200-1300分流到此",
+    tags: ["民办"],
+    cautions: ["与本部生源差距明显"] },
+
+  { name: "两江南开中学", district: "两江新区", tier: 1, flagship: "南开体系",
+    scores: { 2024: 659.5, 2025: 651.5 }, conf: "M",
+    flagshipClass: "两江南开清北班",
+    classDetail: "南开分校,师资和本部有衔接",
+    tags: ["南开分校"],
+    cautions: ["与本部生源差距"] },
+
+  { name: "西南大学附中两江校区(大竹林)", district: "两江新区", tier: 1, flagship: "西附体系",
+    scores: { 2021: 677, 2023: 687, 2024: 673.5, 2025: 659.5 }, conf: "H",
+    flagshipClass: "西附两江创新班(与本部统一管理，两江新区)",
+    classDetail: "与西附本部统一师资、教研管理；重本率约65%；分数线近年波动（2023高峰后回落）",
+    tags: ["西附分校", "口碑较稳"],
+    cautions: [] },
+
+  { name: "重大附中(沙坪坝本部)", district: "沙坪坝区", tier: 1,
+    scores: { 2023: 668, 2024: 655, 2025: 660 }, conf: "M",
+    flagshipClass: "重大附中实验班(约2班，理工科特色)",
+    classDetail: "享重庆大学资源支持，理工科竞赛有优势；重本率约60%；高考稳定出清北1-3人/年",
+    tags: ["重大背景"],
+    cautions: [] },
+
+  { name: "重大附中新桥校区", district: "沙坪坝区", tier: 1,
+    scores: { 2024: 632, 2025: 638 }, conf: "L",
+    flagshipClass: "新桥实验班",
+    classDetail: "重大附中分校区",
+    tags: ["重大分校区"],
+    cautions: [] },
+
+  { name: "大渡口西南大学附属中学", district: "大渡口区", tier: 1, flagship: "西附体系",
+    scores: { 2025: 642 }, conf: "L",
+    flagshipClass: "西附大渡口实验班",
+    classDetail: "2024新增联招校",
+    tags: ["新建分校"],
+    cautions: ["数据稀缺"] },
+
+  // ============ 沙坪坝其他 ============
+  { name: "重庆七中", district: "沙坪坝区", tier: 1,
+    scores: { 2021: 659.5, 2022: 659.5, 2023: 655, 2024: 638, 2025: 645 }, conf: "M",
+    flagshipClass: "七中实验班(约2班，沙区优质生源集中地)",
+    classDetail: "沙坪坝区重老牌，重本率约55%；稳定出清北0-2人/年；大学城附近，适合理工科方向",
+    tags: ["老牌区重"], cautions: [] },
+
+  { name: "凤鸣山中学", district: "沙坪坝区", tier: 1,
+    scores: { 2021: 644, 2022: 654.5, 2023: 650, 2024: 625, 2025: 632 }, conf: "M",
+    flagshipClass: "凤鸣实验班(约2班，沙区区重)",
+    classDetail: "沙坪坝区重，重本率约50%；近年录取线波动较大(2024大幅下降)；竞赛资源一般",
+    tags: ["沙区区重"], cautions: [] },
+
+  { name: "青木关中学", district: "沙坪坝区", tier: 1,
+    scores: { 2021: 613.5, 2022: 627.5, 2023: 641.5, 2024: 605, 2025: 612 }, conf: "M",
+    flagshipClass: "青木实验班",
+    classDetail: "位于大学城",
+    tags: ["大学城"], cautions: ["位置偏"] },
+
+  { name: "大学城第一中学", district: "高新区", tier: 1,
+    scores: { 2022: 622.5, 2024: 605, 2025: 612 }, conf: "M",
+    flagshipClass: "大学城一中实验班",
+    classDetail: "高新区",
+    tags: ["高新区"], cautions: [] },
+
+  { name: "重庆字水中学", district: "江北区", tier: 1,
+    scores: { 2022: 640, 2023: 638, 2024: 615, 2025: 622 }, conf: "M",
+    flagshipClass: "字水实验班(约2班，江北区重)",
+    classDetail: "江北区老牌区重，重本率约50%；一本率约75%；与十八中同区竞争，生源略逊",
+    tags: ["江北区重"], cautions: ["一本率约50%, 与十一/十八差距明显"] },
+
+  // ============ 渝中区其他 ============
+  { name: "重庆29中", district: "渝中区", tier: 1,
+    scores: { 2022: 662, 2023: 658, 2024: 640, 2025: 648 }, conf: "M",
+    flagshipClass: "29中实验班(约2班，渝中优质生源)",
+    classDetail: "渝中老牌区重，重本率约60%；稳定出清北0-2人/年；市中心位置好，交通便利",
+    tags: ["渝中老牌"], cautions: [] },
+
+  { name: "复旦中学(本部)", district: "渝中区", tier: 1,
+    scores: { 2021: 644.5, 2022: 648.5, 2024: 625, 2025: 632 }, conf: "M",
+    flagshipClass: "复旦实验班(约2班，渝中区重)",
+    classDetail: "渝中区重，重本率约55%；有清北0-2人/年；人文氛围浓，渝中核心位置",
+    tags: ["渝中区重"], cautions: [] },
+
+  { name: "复旦中学三十六中校区", district: "渝中区", tier: 1,
+    scores: { 2025: 615 }, conf: "L",
+    flagshipClass: "复旦三十六中实验班",
+    classDetail: "复旦分校区",
+    tags: ["复旦分校区"], cautions: [] },
+
+  { name: "重庆42中", district: "渝中区", tier: 2,
+    scores: { 2022: 602.5, 2024: 580, 2025: 585 }, conf: "M",
+    flagshipClass: "—", classDetail: "渝中普通联招",
+    tags: ["普通联招"], cautions: [] },
+
+  { name: "重庆66中", district: "渝中区", tier: 2,
+    scores: { 2022: 612.5, 2024: 585, 2025: 590 }, conf: "M",
+    flagshipClass: "—", classDetail: "渝中普通联招",
+    tags: ["普通联招"], cautions: [] },
+
+  // ============ 江北区 ============
+  { name: "重庆新村实验中学", district: "江北区", tier: 1,
+    scores: { 2024: 628, 2025: 632 }, conf: "L",
+    flagshipClass: "新村实验班",
+    classDetail: "江北区重", tags: ["江北区重"], cautions: [] },
+
+  { name: "重庆江北高级中学(原望江)", district: "江北区", tier: 1,
+    scores: { 2024: 615, 2025: 620 }, conf: "L",
+    flagshipClass: "—", classDetail: "江北区联招",
+    tags: ["江北联招"], cautions: [] },
+
+  // ============ 南岸区 ============
+  { name: "重庆110中学", district: "南岸区", tier: 1,
+    scores: { 2021: 645.5, 2024: 632, 2025: 638 }, conf: "M",
+    flagshipClass: "110中实验班(约2班，南岸区重标杆)",
+    classDetail: "南岸区重点中学，重本率约60%；近年录取线相对稳定；与十一中同区，定位差距明显",
+    tags: ["南岸区重"], cautions: [] },
+
+  { name: "南岸辅仁中学", district: "南岸区", tier: 1,
+    scores: { 2021: 583, 2024: 605, 2025: 612 }, conf: "M",
+    flagshipClass: "辅仁实验班(约2班，南岸区重)",
+    classDetail: "南岸区重，重本率约50%；近年分数线呈上升趋势（2021年583→2025年612），口碑改善中",
+    tags: ["南岸区重"], cautions: [] },
+
+  { name: "重庆二外(雪松路)", district: "南岸区", tier: 1,
+    scores: { 2024: 640, 2025: 648 }, conf: "L",
+    flagshipClass: "二外实验班+外语特色班(多语种)",
+    classDetail: "民办外语特色，英法德日多语种；重本率约65%；外语竞赛成绩突出；学费较高，适合外语方向规划",
+    tags: ["外语特色"], cautions: ["民办,学费高"] },
+
+  { name: "广益中学", district: "南岸区", tier: 1,
+    scores: { 2021: 618, 2022: 615.5, 2024: 600, 2025: 608 }, conf: "M",
+    flagshipClass: "广益实验班(约2班，南岸老牌)",
+    classDetail: "南岸老牌区重，重本率约50%；口碑踏实，适合希望稳定升学路径的学生",
+    tags: ["南岸老牌"], cautions: [] },
+
+  { name: "南坪中学", district: "南岸区", tier: 1,
+    scores: { 2021: 604.5, 2024: 595, 2025: 602 }, conf: "M",
+    flagshipClass: "—", classDetail: "南岸联招",
+    tags: [], cautions: [] },
+
+  { name: "珊瑚中学", district: "南岸区", tier: 1,
+    scores: { 2024: 590, 2025: 600 }, conf: "L",
+    flagshipClass: "—", classDetail: "南岸联招",
+    tags: [], cautions: [] },
+
+  // ============ 九龙坡 ============
+  { name: "杨家坪中学", district: "九龙坡区", tier: 1,
+    scores: { 2022: 658.5, 2023: 671, 2024: 615, 2025: 632 }, conf: "H",
+    flagshipClass: "杨中实验班(约2班，九龙坡老牌区重)",
+    classDetail: "九龙坡老牌名校；2024年录取线大幅下滑，重本率约55%；近年变动大，建议关注最新口碑",
+    tags: ["九龙坡老牌"], cautions: ["2024年大幅降分"] },
+
+  { name: "重庆铁路中学", district: "九龙坡区", tier: 1,
+    scores: { 2021: 637, 2022: 640, 2023: 651, 2024: 592.5, 2025: 605 }, conf: "H",
+    flagshipClass: "铁中实验班(约2班，九龙坡区重)",
+    classDetail: "九龙坡区重，重本率约50%；2023年录取线异常冲高后2024骤降，生源质量波动，观望为宜",
+    tags: ["九龙坡区重"], cautions: ["2024年大降分"] },
+
+  { name: "渝西中学(94中)", district: "九龙坡区", tier: 2,
+    scores: { 2024: 555, 2025: 562 }, conf: "L",
+    flagshipClass: "—", classDetail: "九龙坡普通联招",
+    tags: ["普通联招"], cautions: [] },
+
+  { name: "田家炳中学", district: "九龙坡区", tier: 1,
+    scores: { 2022: 612, 2024: 588, 2025: 595 }, conf: "M",
+    flagshipClass: "田家炳实验班", classDetail: "九龙坡区联招",
+    tags: [], cautions: [] },
+
+  { name: "一外华岩中学(西校区)", district: "九龙坡区", tier: 1, flagship: "一外体系", referenceFamily: "一外",
+    scores: { 2025: 652 }, conf: "M",
+    flagshipClass: "一外华岩实验班(一外体系，九龙坡分校区)",
+    classDetail: "一外体系分校，外语特色延续；重本率约60%；2025年首年独立联招数据，口碑参考一外本部",
+    tags: ["一外分校"], cautions: [] },
+
+  // 2026年新开校示例(无历史数据,系统按referenceSchool自动估算)
+  { name: "两江一外(两江新区一外分校)", district: "两江新区", tier: 1, flagship: "一外体系",
+    referenceSchool: "一外华岩中学(西校区)", referenceOffset: -5,
+    scores: {}, conf: "L",
+    flagshipClass: "两江一外实验班", classDetail: "2026年新开,无历史数据,系统按一外华岩-5估算",
+    tags: ["2026新增", "一外分校"], cautions: ["新校,估算线仅供方向参考"] },
+
+  // ============ 大渡口 ============
+  { name: "重庆37中", district: "大渡口区", tier: 1,
+    scores: { 2022: 617, 2024: 595, 2025: 602 }, conf: "M",
+    flagshipClass: "37中实验班", classDetail: "大渡口区重",
+    tags: ["大渡口区重"], cautions: [] },
+
+  { name: "重庆95中", district: "大渡口区", tier: 1,
+    scores: { 2024: 580, 2025: 588 }, conf: "L",
+    flagshipClass: "—", classDetail: "大渡口联招",
+    tags: [], cautions: [] },
+
+  // ============ 北碚 ============
+  { name: "兼善中学(本部)", district: "北碚区", tier: 1,
+    scores: { 2023: 624, 2024: 597, 2025: 608 }, conf: "M",
+    flagshipClass: "兼善实验班(约2班，北碚传统名校)",
+    classDetail: "北碚百年名校，重本率约55%；2024年有清北0-1人；与西附本部同处北碚，生源适度竞争",
+    tags: ["北碚老牌"], cautions: [] },
+
+  { name: "兼善中学龙湖校区", district: "北碚区", tier: 1,
+    scores: { 2025: 595 }, conf: "L",
+    flagshipClass: "—", classDetail: "兼善分校",
+    tags: ["兼善分校"], cautions: [] },
+
+  { name: "江北中学(北碚)", district: "北碚区", tier: 1,
+    scores: { 2024: 590, 2025: 598 }, conf: "L",
+    flagshipClass: "江北中学实验班", classDetail: "北碚区联招",
+    tags: [], cautions: [] },
+
+  { name: "朝阳中学(北碚)", district: "北碚区", tier: 1,
+    scores: { 2022: 632.5, 2023: 642.5, 2024: 622.5, 2025: 631.5 }, conf: "H",
+    flagshipClass: "朝阳实验班(约2班，北碚区重标杆)",
+    classDetail: "北碚区最强区重，重本率约60%；2024年有清北1-2人；近年分数线稳中有升，口碑好",
+    tags: ["北碚区重"], cautions: [] },
+
+  { name: "王朴中学", district: "北碚区", tier: 1,
+    scores: { 2024: 575, 2025: 582 }, conf: "L",
+    flagshipClass: "—", classDetail: "北碚联招",
+    tags: [], cautions: [] },
+
+  // ============ 渝北/两江 ============
+  { name: "松树桥中学", district: "渝北区", tier: 1,
+    scores: { 2023: 635, 2024: 597.5, 2025: 612 }, conf: "M",
+    flagshipClass: "松树桥实验班(约2班，渝北区重)",
+    classDetail: "渝北区重，重本率约55%；近年分数线波动（2024较大幅度下降）；适合渝北本区稳妥选择",
+    tags: ["渝北区重"], cautions: [] },
+
+  { name: "暨华中学", district: "渝北区", tier: 1,
+    scores: { 2022: 619.5, 2024: 605, 2025: 612 }, conf: "M",
+    flagshipClass: "暨华实验班", classDetail: "渝北区联招",
+    tags: [], cautions: [] },
+
+  { name: "渝北中学(本部)", district: "渝北区", tier: 1,
+    scores: { 2021: 640, 2022: 650.5, 2023: 656, 2024: 635, 2025: 643 }, conf: "H",
+    flagshipClass: "渝北中学实验班(约2班，渝北区重)",
+    classDetail: "渝北区老牌重点，重本率约60%；近5年分数线基本在635-656之间，稳中有序；适合渝北/两江生源",
+    tags: ["渝北区重"], cautions: [] },
+
+  { name: "礼嘉中学", district: "两江新区", tier: 1,
+    scores: { 2022: 636, 2024: 628, 2025: 636 }, conf: "M",
+    flagshipClass: "礼嘉实验班(约2班，两江新区区重)",
+    classDetail: "两江新区较强区重，重本率约55%；近年分数线稳在628-636之间，性价比较高",
+    tags: ["两江区重"], cautions: [] },
+
+  { name: "龙湖巴蜀(民办)", district: "渝北区", tier: 1, flagship: "巴蜀体系",
+    referenceSchool: "鲁能巴蜀中学", referenceOffset: -20,
+    scores: {}, conf: "L",
+    flagshipClass: "龙湖巴蜀实验班", classDetail: "巴蜀民办分校,按鲁巴-20估算",
+    tags: ["巴蜀民办"], cautions: ["学费高"] },
+
+  { name: "为明学校", district: "渝北区", tier: 1,
+    referenceSchool: "重庆育才中学(本部)", referenceOffset: -40,
+    scores: {}, conf: "L",
+    flagshipClass: "为明国际班+高考班", classDetail: "民办,国际化路线",
+    tags: ["民办国际化"], cautions: ["学费高,估算极粗糙"] },
+
+  { name: "空港中学", district: "渝北区", tier: 1,
+    scores: { 2024: 568, 2025: 575 }, conf: "L",
+    flagshipClass: "—", classDetail: "渝北联招",
+    tags: [], cautions: [] },
+
+  { name: "北新巴蜀", district: "渝北区", tier: 1, flagship: "巴蜀体系",
+    scores: { 2021: 615.5, 2024: 612, 2025: 620 }, conf: "L",
+    flagshipClass: "北新巴蜀实验班", classDetail: "巴蜀分校",
+    tags: ["巴蜀分校"], cautions: [] },
+
+  // ============ 巴南 ============
+  { name: "清华中学(巴南)", district: "巴南区", tier: 1,
+    scores: { 2022: 597.5, 2024: 575, 2025: 585 }, conf: "M",
+    flagshipClass: "清华实验班(约2班，巴南老牌区重)",
+    classDetail: "巴南区老牌名校，重本率约50%；注意：与北京清华大学无关，仅校名相同",
+    tags: ["巴南老牌"], cautions: [] },
+
+  { name: "巴南中学", district: "巴南区", tier: 1,
+    scores: { 2024: 580, 2025: 588 }, conf: "L",
+    flagshipClass: "巴南中学实验班", classDetail: "巴南区重",
+    tags: [], cautions: [] },
+
+  { name: "重庆实验中学(中实)", district: "巴南区", tier: 1,
+    scores: { 2024: 595, 2025: 602 }, conf: "L",
+    flagshipClass: "中实实验班", classDetail: "巴南区重",
+    tags: [], cautions: [] },
+
+  { name: "全善中学", district: "巴南区", tier: 1,
+    scores: { 2025: 607 }, conf: "L",
+    flagshipClass: "全善实验班", classDetail: "巴南联招(2025本校生约607)",
+    tags: [], cautions: [] },
+
+  // ============ 高新区其他 ============
+  { name: "第一实验中学(一实)", district: "高新区", tier: 1,
+    scores: { 2021: 676, 2022: 685, 2023: 686, 2024: 670, 2025: 672 }, conf: "H",
+    flagshipClass: "一实创新班(约2班，高新区直属重点)",
+    classDetail: "高新区教育局直属，重本率约65%；2024年有清北3-5人；硬件新、师资配置强；近年分数线稳在670-686区间",
+    tags: ["高新直属"], cautions: [] },
+
+  { name: "川外科学城中学", district: "高新区", tier: 1,
+    scores: { 2024: 638, 2025: 645 }, conf: "L",
+    flagshipClass: "川外特色班", classDetail: "2024新增联招校",
+    tags: ["新建联招校", "外语特色"], cautions: ["数据稀缺"] },
+
+  // ============ 渝西联招区 ============
+  { name: "永川中学", district: "永川区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: +15,
+    scores: {}, conf: "L",
+    flagshipClass: "永川中学清北班", classDetail: "永川老牌龙头,按璧山+15估算",
+    tags: ["永川老牌"], cautions: [] },
+
+  { name: "永川北山中学", district: "永川区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: +5,
+    scores: {}, conf: "L",
+    flagshipClass: "北山实验班", classDetail: "永川区重",
+    tags: ["永川区重"], cautions: [] },
+
+  { name: "永川萱花中学", district: "永川区", tier: 2,
+    scores: {}, conf: "L",
+    flagshipClass: "—", classDetail: "永川普通联招",
+    tags: [], cautions: [] },
+
+  { name: "璧山中学", district: "璧山区", tier: 1,
+    scores: { 2024: 605, 2025: 612 }, conf: "L",
+    flagshipClass: "璧山实验班", classDetail: "璧山老牌",
+    tags: ["璧山老牌"], cautions: [] },
+
+  { name: "巴川中学(铜梁,民办)", district: "铜梁区", tier: 1,
+    scores: { 2022: 683 }, conf: "M",
+    flagshipClass: "巴川火箭班(顶尖班)+竞赛班",
+    classDetail: "民办名校，2014-2022重庆联招前列；火箭班小班精英化，竞赛实力强；近年公开数据减少，建议实地了解",
+    tags: ["民办名校"], cautions: ["民办学费高", "近年信息少"] },
+
+  // ============ 二批次重点 ============
+  { name: "天星桥中学", district: "沙坪坝区", tier: 2,
+    scores: { 2022: 598.5, 2024: 565, 2025: 572 }, conf: "M",
+    flagshipClass: "—", classDetail: "沙区普通联招",
+    tags: ["普通联招"], cautions: [] },
+
+  { name: "重庆26中", district: "渝中区", tier: 2,
+    scores: { 2024: 555, 2025: 560 }, conf: "L",
+    flagshipClass: "—", classDetail: "渝中普通联招",
+    tags: [], cautions: [] },
+
+  { name: "恒一高级中学(民办)", district: "渝北区", tier: 2,
+    scores: { 2024: 540, 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "民办联招",
+    tags: ["民办"], cautions: ["学费高"] },
+
+  { name: "重庆30中", district: "九龙坡区", tier: 2,
+    scores: { 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024复招",
+    tags: ["复招联招"], cautions: [] },
+
+  { name: "史迪威外国语学校", district: "渝中区", tier: 2,
+    scores: { 2025: 555 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024新增联招",
+    tags: ["新增联招"], cautions: ["民办"] },
+
+  { name: "黔江新华中学", district: "黔江区", tier: 2,
+    scores: { 2024: 616 }, conf: "M",
+    flagshipClass: "—", classDetail: "非联招区联招校",
+    tags: ["远郊联招"], cautions: ["远郊"] },
+
+  { name: "育仁中学", district: "南岸区", tier: 2,
+    scores: { 2025: 545 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024新增联招",
+    tags: ["新增联招"], cautions: [] },
+
+  { name: "重庆华师中旭学校", district: "长寿区", tier: 2,
+    scores: { 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "长寿联招",
+    tags: [], cautions: [] },
+
+  { name: "永川昌南中学", district: "永川区", tier: 2,
+    scores: { 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024新增联招",
+    tags: ["新增联招"], cautions: [] },
+
+  { name: "大足迪涛学校", district: "大足区", tier: 2,
+    scores: { 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024新增联招",
+    tags: ["新增联招"], cautions: ["民办"] },
+
+  { name: "铜梁实验中学", district: "铜梁区", tier: 2,
+    scores: { 2025: 540 }, conf: "L",
+    flagshipClass: "—", classDetail: "2024新增联招",
+    tags: ["新增联招"], cautions: [] },
+
+  // ============ 江津/合川/长寿等(数据稀缺) ============
+  { name: "江津中学", district: "江津区", tier: 1,
+    scores: {}, conf: "L",
+    flagshipClass: "江津中学清北班", classDetail: "已退出联招,自行招生",
+    tags: ["已退出联招"], cautions: ["不在联招志愿内"] },
+
+  { name: "合川中学", district: "合川区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: +10,
+    scores: {}, conf: "L",
+    flagshipClass: "合川中学清北班", classDetail: "合川老牌,按璧山+10估算",
+    tags: [], cautions: ["公开数据稀少"] },
+
+  { name: "长寿中学", district: "长寿区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: 0,
+    scores: {}, conf: "L",
+    flagshipClass: "长寿中学实验班", classDetail: "长寿老牌,与璧山持平估算",
+    tags: [], cautions: [] },
+
+  { name: "大足中学", district: "大足区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: -5,
+    scores: {}, conf: "L",
+    flagshipClass: "大足中学实验班", classDetail: "大足老牌,按璧山-5估算",
+    tags: [], cautions: [] },
+
+  { name: "荣昌中学", district: "荣昌区", tier: 1,
+    referenceSchool: "璧山中学", referenceOffset: -10,
+    scores: {}, conf: "L",
+    flagshipClass: "荣昌中学实验班", classDetail: "荣昌老牌,按璧山-10估算",
+    tags: [], cautions: [] },
+];
+
+/* ============================================================
+ * 区域配置
+ * ============================================================ */
+const DISTRICT_GROUPS = {
+  "主城": ["渝中区","江北区","沙坪坝区","九龙坡区","南岸区","大渡口区","北碚区","渝北区","巴南区","两江新区","高新区"],
+  "渝西": ["江津区","璧山区","永川区","合川区","长寿区","大足区","铜梁区","荣昌区","万盛经开区"],
+  "渝东": ["黔江区","万州区","云阳县"],
+};
+
+// 邻区配置(就近原则)
+const NEIGHBOR_DISTRICTS = {
+  "渝中区": ["渝中区","江北区","沙坪坝区","南岸区","九龙坡区","大渡口区"],
+  "江北区": ["江北区","渝中区","渝北区","两江新区","南岸区","沙坪坝区"],
+  "沙坪坝区": ["沙坪坝区","渝中区","九龙坡区","北碚区","江北区","高新区","大渡口区"],
+  "九龙坡区": ["九龙坡区","沙坪坝区","渝中区","大渡口区","南岸区","高新区"],
+  "南岸区": ["南岸区","渝中区","江北区","巴南区","九龙坡区"],
+  "大渡口区": ["大渡口区","九龙坡区","沙坪坝区","巴南区","渝中区"],
+  "北碚区": ["北碚区","沙坪坝区","渝北区","两江新区","璧山区"],
+  "渝北区": ["渝北区","江北区","两江新区","北碚区","沙坪坝区"],
+  "巴南区": ["巴南区","南岸区","大渡口区","九龙坡区"],
+  "两江新区": ["两江新区","渝北区","江北区","北碚区","沙坪坝区"],
+  "高新区": ["高新区","九龙坡区","沙坪坝区","大渡口区","璧山区"],
+  "江津区": ["江津区","九龙坡区","大渡口区","巴南区","永川区","璧山区"],
+  "璧山区": ["璧山区","沙坪坝区","北碚区","江津区","高新区","九龙坡区"],
+  "永川区": ["永川区","江津区","璧山区","荣昌区","大足区","铜梁区"],
+};
+
+/* ============================================================
+ * 趋势分析:从近5年联招线推断学校热度走向
+ *   - 用最近3-4年的线性回归斜率
+ *   - 返回 {arrow, label, slope, adjustment}
+ *   - adjustment: 用于修正2026预估线(约半个斜率,保守)
+ * ============================================================ */
+function analyzeTrend(school) {
+  const s = school.scores;
+  const points = [2021,2022,2023,2024,2025]
+    .map(y => ({ y, v: s[y] }))
+    .filter(p => p.v != null);
+
+  if (points.length < 2) {
+    return { arrow: "—", label: "数据不足", slope: 0, adjustment: 0, conf: "low" };
+  }
+
+  // 只取最近3-4年(更反映近期热度)
+  const recent = points.slice(-Math.min(4, points.length));
+  const n = recent.length;
+  const sumX = recent.reduce((a,p) => a + p.y, 0);
+  const sumY = recent.reduce((a,p) => a + p.v, 0);
+  const sumXY = recent.reduce((a,p) => a + p.y * p.v, 0);
+  const sumXX = recent.reduce((a,p) => a + p.y * p.y, 0);
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+
+  // 联招送档线本身在波动(2024-11/年),所以小坡度视为"平稳"
+  let arrow, label;
+  if (slope >= 3.5)       { arrow = "↑↑"; label = "明显上涨"; }
+  else if (slope >= 1.5)  { arrow = "↑";  label = "缓涨"; }
+  else if (slope > -1.5)  { arrow = "→";  label = "平稳"; }
+  else if (slope > -3.5)  { arrow = "↓";  label = "缓跌"; }
+  else                     { arrow = "↓↓"; label = "明显下跌"; }
+
+  // 调整幅度:近期斜率的0.5(保守),最多±8分
+  const adjustment = Math.max(-8, Math.min(8, slope * 0.5));
+  return { arrow, label, slope: +slope.toFixed(2), adjustment: +adjustment.toFixed(1), conf: n >= 3 ? "ok" : "low" };
+}
+
+/* ============================================================
+ * 估算2026年学校录取线
+ *   策略:
+ *   - 优先用2025
+ *   - 否则用2024 (送档线趋势已稳定在低位)
+ *   - 否则用更早年份并做轻度调整
+ *   - 最后加上趋势修正(保守半倍斜率)
+ * ============================================================ */
+function estimateLine2026(school) {
+  const s = school.scores;
+  let base = null, src = null;
+  if (s[2025] != null)      { base = s[2025]; src = "2025实际"; }
+  else if (s[2024] != null) { base = s[2024] + 3; src = "2024+3估"; }
+  else if (s[2023] != null) { base = s[2023] - 10; src = "2023-10估"; }
+  else if (s[2022] != null) { base = s[2022] - 20; src = "2022-20估"; }
+  else if (s[2021] != null) { base = s[2021] - 15; src = "2021-15估"; }
+  else if (school.referenceSchool) {
+    // 新校:指定具体参考学校 + 偏移分数(±5~10)
+    const ref = SCHOOLS.find(x => x.name === school.referenceSchool);
+    if (!ref) return { value: null, src: `参考校"${school.referenceSchool}"未找到`, trend: null };
+    const refLatest = ref.scores[2025] ?? ref.scores[2024] ?? ref.scores[2023] ?? ref.scores[2022];
+    if (refLatest == null) return { value: null, src: `参考校${ref.name}无历史数据`, trend: null };
+    const offset = school.referenceOffset ?? -8;  // 默认-8
+    const value = Math.round((refLatest + offset) * 2) / 2;
+    const refYear = ref.scores[2025] != null ? 2025
+                  : ref.scores[2024] != null ? 2024
+                  : ref.scores[2023] != null ? 2023 : 2022;
+    return {
+      value, trend: null, base: refLatest,
+      src: `参考${ref.name}(${refYear}年${refLatest})${offset>=0?'+':''}${offset}`,
+      referenceInfo: { school: ref.name, year: refYear, value: refLatest, offset, finalValue: value }
+    };
+  }
+  else if (school.referenceFamily) {
+    // fallback: 用同系列均线-8
+    const familyMembers = SCHOOLS.filter(x =>
+      x.referenceFamily === school.referenceFamily
+      && x.name !== school.name
+      && (x.scores[2025] != null || x.scores[2024] != null || x.scores[2023] != null)
+    );
+    if (familyMembers.length === 0) return { value: null, src: "无可参考同系列校", trend: null };
+    const familyLatest = familyMembers
+      .map(x => ({ name: x.name, line: x.scores[2025] ?? x.scores[2024] ?? x.scores[2023] }))
+      .filter(v => v.line != null);
+    if (familyLatest.length === 0) return { value: null, src: "无数据", trend: null };
+    const avg = familyLatest.reduce((a,b)=>a+b.line,0) / familyLatest.length;
+    const value = Math.round((avg - 8) * 2) / 2;
+    return {
+      value, trend: null, base: avg,
+      src: `参考${school.referenceFamily}系列均线(${familyLatest.length}所均${avg.toFixed(0)})-8`,
+      referenceInfo: { family: school.referenceFamily, members: familyLatest, avg, offset: -8, finalValue: value }
+    };
+  }
+  else return { value: null, src: "无数据", trend: null };
+
+  const trend = analyzeTrend(school);
+  const adj = trend.conf === "ok" ? trend.adjustment : 0;
+  const value = Math.round((base + adj) * 2) / 2;
+  return { value, src: adj !== 0 ? `${src}${adj>0?'+':''}${adj}趋势修正` : src, trend, base };
+}
+
+/* ============================================================
+ * 推荐核心
+ *   slots: 5档(1A冲+20, 1B冲+10, 1C稳±5, 1D稳-5, 1E保-20)
+ *   每个 batch (一批次/二批次) 独立挑选5档
+ *   每档输出: 主推荐 + 1-2备选
+ * ============================================================ */
+/* ============================================================
+ * 5档定义 - 用户最新规则(2026版)
+ *   1A 冲: diff (+10, +15]    冲第一档,上限+15分
+ *   1B 冲: diff (+5, +10]     冲第二档
+ *   1C 稳: diff (-10, +5]     稳第一所(取偏上的)
+ *   1D 稳: diff (-10, +5]     稳第二所(取偏下的,排除1C选过的)
+ *   1E 保: diff ≤ -15         保一所,必须比你低15分以上
+ * ============================================================ */
+const SLOT_DEFS = [
+  { code: "1A", name: "冲", offset: +13, maxDiff: +15, minDiff: +10,  level: "chong", desc: "学校线比你高10~15分" },
+  { code: "1B", name: "冲", offset: +8,  maxDiff: +10, minDiff: +5,   level: "chong", desc: "学校线比你高5~10分" },
+  { code: "1C", name: "稳", offset: +2,  maxDiff: +5,  minDiff: -10,  level: "wen",   desc: "学校线在你-10~+5分(取偏上)" },
+  { code: "1D", name: "稳", offset: -5,  maxDiff: +5,  minDiff: -10,  level: "wen",   desc: "学校线在你-10~+5分(取偏下)" },
+  { code: "1E", name: "保", offset: -20, maxDiff: -15, minDiff: -120, level: "bao",   desc: "学校线比你低15分以上(稳妥保底)" },
+];
+
+function filterByPreference(schools, userDistrict, prefer) {
+  if (prefer === "all" || !userDistrict || userDistrict === "其他/不限") return schools.map(s => ({ ...s, _localScore: 0 }));
+
+  const neighbors = NEIGHBOR_DISTRICTS[userDistrict] || [userDistrict];
+  return schools.map(s => {
+    let localScore = 0;
+    if (s.district === userDistrict) localScore = 2;
+    else if (neighbors.includes(s.district)) localScore = 1;
+    else if (prefer === "local_strict") return null;  // 严格模式过滤掉远区
+    return { ...s, _localScore: localScore };
+  }).filter(Boolean);
+}
+
+function pickForSlot(schools, userScore, slot, tier, excludeNames = new Set()) {
+  // 评分函数(不含区域加成,区域用分层而非加分)
+  const scoreCandidate = (s) => {
+    const est = estimateLine2026(s);
+    if (est.value == null) return null;
+    const diff = est.value - userScore;
+    const distToCenter = Math.abs(diff - slot.offset);
+    const flagshipBoost = s.flagship ? 8 : 0;
+    const confBoost = { H: 6, M: 3, L: 0 }[s.conf] || 0;
+    return {
+      ...s, _est: est, _diff: diff, _distToCenter: distToCenter,
+      _baseScore: 100 - distToCenter + flagshipBoost + confBoost,
+    };
+  };
+
+  // 按区域分层:本区(2) > 邻区(1) > 远区(0)
+  const groups = { 2: [], 1: [], 0: [] };
+  for (const s of schools) {
+    if (s.tier !== tier) continue;
+    if (excludeNames.has(s.name)) continue;  // 排除已选学校
+    const scored = scoreCandidate(s);
+    if (scored) groups[s._localScore || 0].push(scored);
+  }
+
+  // 严格按区域分层:本区无匹配才到邻区,邻区无匹配才到远区 (上限绝不突破)
+  for (const localTier of [2, 1, 0]) {
+    const pool = groups[localTier];
+    if (pool.length === 0) continue;
+    const matches = pool
+      .filter(s => s._diff > slot.minDiff && s._diff <= slot.maxDiff)
+      .sort((a,b) => b._baseScore - a._baseScore);
+    if (matches.length > 0) {
+      return matches.map(s => ({ ...s, _localTier: localTier }));
+    }
+  }
+  return [];
+}
+
+/* ============================================================
+ * 二批次专用:安全梯队选法(取用户可达的最高5所二批次校,按线降序)
+ *   二批次本质是联招保底,不适合冲稳保;给一个"梯队"更实用
+ * ============================================================ */
+function pickTier2Ladder(userScore, userDistrict) {
+  const neighbors = NEIGHBOR_DISTRICTS[userDistrict] || [];
+  const regionOf = (s) => {
+    if (!userDistrict || userDistrict === "其他/不限") return 0;
+    if (s.district === userDistrict) return 2;
+    if (neighbors.includes(s.district)) return 1;
+    return 0;
+  };
+  return SCHOOLS
+    .map(s => {
+      const est = estimateLine2026(s);
+      return est.value != null ? { ...s, _est: est, _diff: est.value - userScore, _localTier: regionOf(s) } : null;
+    })
+    .filter(s => s && s.tier === 2)
+    .filter(s => s._est.value <= userScore + 5)  // 允许微超常发挥+5
+    .sort((a, b) => b._est.value - a._est.value)  // 高线优先
+    .slice(0, 5);
+}
+function getAllReachableInSlot(schools, userScore, slot, tier) {
+  return schools
+    .map(s => {
+      const est = estimateLine2026(s);
+      if (est.value == null) return null;
+      const diff = est.value - userScore;
+      return { ...s, _est: est, _diff: diff };
+    })
+    .filter(Boolean)
+    .filter(s => s.tier === tier && s._diff > slot.minDiff && s._diff <= slot.maxDiff)
+    .sort((a, b) => b._est.value - a._est.value);  // 按预估线降序
+}
+
+/* ============================================================
+ * 渲染"本档可触及学校全景表"
+ * ============================================================ */
+function renderReachableList(schools, userDistrict, primaryName, slot, userScore) {
+  const neighbors = NEIGHBOR_DISTRICTS[userDistrict] || [];
+  const regionOf = (s) => {
+    if (!userDistrict || userDistrict === "其他/不限") return "—";
+    if (s.district === userDistrict) return "本区";
+    if (neighbors.includes(s.district)) return "邻区";
+    return "远区";
+  };
+
+  if (schools.length === 0) {
+    return `<details class="reachable-list" open>
+      <summary class="reachable-header">
+        <span>📋 本档全市可触及学校 (0所)</span>
+        <span class="toggle">▾</span>
+      </summary>
+      <div class="reachable-empty">全市该批次无学校落入本档严格区间 (硬上限 ≤ 你${slot.maxDiff>=0?'+':''}${slot.maxDiff}分, 下界 > 你${slot.minDiff>=0?'+':''}${slot.minDiff}分)</div>
+    </details>`;
+  }
+
+  const rows = schools.map(s => {
+    const isRec = s.name === primaryName;
+    const region = regionOf(s);
+    const yrs = [2021,2022,2023,2024,2025].map(y =>
+      `<span>${String(y).slice(2)}:${s.scores[y]??'—'}</span>`
+    ).join(" / ");
+    const confColor = { H: "#27ae60", M: "#f39c12", L: "#e74c3c" }[s.conf];
+    const diffStr = (s._diff >= 0 ? "+" : "") + s._diff.toFixed(0);
+    const trend = s._est.trend || { arrow: "—", label: "" };
+    const trendColor = trend.arrow.startsWith("↑") ? "#c0392b"
+                     : trend.arrow.startsWith("↓") ? "#27ae60" : "#888";
+    return `<tr class="${isRec?'recommended':''}">
+      <td class="r-name ${isRec?'recommended':''}">${s.name}</td>
+      <td>${s.district}</td>
+      <td class="r-est">${s._est.value}<span style="color:#888;font-size:10.5px;font-weight:normal"> (${diffStr})</span></td>
+      <td><span style="color:${trendColor};font-weight:600" title="${trend.label}">${trend.arrow}</span></td>
+      <td><span class="r-region-${region==='—'?'远区':region}">${region}</span></td>
+      <td><span class="r-conf" style="background:${confColor}">${s.conf}</span></td>
+      <td class="r-history">${yrs}</td>
+    </tr>`;
+  }).join("");
+
+  return `<details class="reachable-list" open>
+    <summary class="reachable-header">
+      <span>📋 本档全市可触及学校 (<b>${schools.length}</b>所，按预估线降序，★为系统推荐)</span>
+      <span class="toggle">▾</span>
+    </summary>
+    <table class="reachable-table">
+      <thead>
+        <tr><th>学校</th><th>区</th><th>2026预估(差值)</th><th>趋势</th><th>区域</th><th>置信</th><th>近5年历史</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </details>`;
+}
+
+/* ============================================================
+ * 生成推荐理由
+ * ============================================================ */
+function genReason(school, userScore, slot, isPrimary, alternatives) {
+  const reasons = [];
+  const diff = school._diff;
+  const est = school._est;
+  const absDiff = Math.abs(diff).toFixed(0);
+  const isHigher = diff > 0;
+  const isLower = diff < 0;
+
+  // 1. 分数定位 - 根据真实diff正负来描述,不靠slot.name硬写
+  let positionPhrase;
+  if (Math.abs(diff) <= 2) {
+    positionPhrase = `<b>与你分数相当</b>`;
+  } else if (isHigher) {
+    positionPhrase = `<b>比你高${absDiff}分</b>`;
+  } else {
+    positionPhrase = `<b>比你低${absDiff}分</b>`;
+  }
+
+  // 根据真实情况和档位语义组合理由
+  if (isHigher && diff >= 5) {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，<b>需发挥超常</b>才可冲`);
+  } else if (isHigher) {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，正常发挥可冲`);
+  } else if (Math.abs(diff) <= 5) {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，<b>实力相当</b>`);
+  } else if (diff >= -10) {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，<b>稳过线</b>`);
+  } else if (diff >= -15) {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，<b>较稳保底</b>`);
+  } else {
+    reasons.push(`预估线 <b>${est.value}</b>(${est.src})，${positionPhrase}，<b>大幅低于你的分数，可作稳妥保底</b>`);
+  }
+
+  // 2. 趋势分析
+  if (est.trend && est.trend.conf === "ok") {
+    const t = est.trend;
+    if (t.arrow.startsWith("↑")) {
+      reasons.push(`近年线<b style="color:#c0392b">${t.label}(${t.arrow})</b>，估算已含+${t.adjustment}分趋势修正，<b>实际可能更高</b>`);
+    } else if (t.arrow.startsWith("↓")) {
+      reasons.push(`近年线<b style="color:#27ae60">${t.label}(${t.arrow})</b>，估算已含${t.adjustment}分趋势修正，<b>实际可能更低</b>`);
+    }
+  }
+
+  // 3. 区域定位
+  const localTierVal = school._localTier ?? school._localScore ?? 0;
+  if (localTierVal === 2) reasons.push(`<b>本区学校</b>，通勤友好`);
+  else if (localTierVal === 1) reasons.push(`邻区学校，通勤可接受`);
+
+  // 4. 王牌班/风评
+  if (school.flagship) reasons.push(`<b>${school.flagship}</b> 头部校`);
+  if (diff < -5 && school.flagshipClass && school.flagshipClass !== "—") {
+    reasons.push(`<b>降档亮点</b>：稳过线后有机会进入 <b>${school.flagshipClass}</b>`);
+  }
+
+  // 5. 数据置信度提醒
+  if (school.conf === "L") reasons.push(`<span style="color:#c0392b">⚠ 数据置信度低，仅供方向参考</span>`);
+
+  // 6. 备选差异化(只在备选时显示)
+  if (!isPrimary && alternatives.length > 0) {
+    const primary = alternatives[0];
+    if (school.district === primary.district) {
+      reasons.push(`与主推荐同区，可作并列备选`);
+    } else if (school._diff > primary._diff) {
+      reasons.push(`比主推荐<b>更冲一点</b>，赌发挥超常`);
+    } else {
+      reasons.push(`比主推荐<b>更稳一点</b>，降分换确定性`);
+    }
+  }
+
+  return reasons.join("；") + "。";
+}
+
+/* ============================================================
+ * 生成同档对比块(当主备选差异显著时)
+ * ============================================================ */
+function genCompareNote(primary, alts, slot) {
+  if (!primary || alts.length === 0) return null;
+
+  // 场景1: 主推是分校,备选是名校本部平行班 / 反之
+  const primaryIsFlagship = !!primary.flagship && primary.flagship !== "巴蜀体系" && primary.flagship !== "八中体系" && primary.flagship !== "南开体系" && primary.flagship !== "西附体系" && primary.flagship !== "育才体系" && primary.flagship !== "一外体系";
+  const altsHasBranch = alts.some(a => a.flagship && (a.flagship.includes("体系") || a.name.includes("分校")));
+
+  // 场景2: 分数接近(±3)但其中一个有王牌班
+  const closeAlts = alts.filter(a => Math.abs(a._diff - primary._diff) <= 5);
+  for (const a of closeAlts) {
+    if (a.flagshipClass && a.flagshipClass !== "—" && (!primary.flagshipClass || primary.flagshipClass === "—")) {
+      return `<h5>同档对比建议</h5><b>${primary.name}</b> 和 <b>${a.name}</b> 分数接近，但 ${a.name} 有 <b>${a.flagshipClass}</b>；若你目标是清北/强基，可优先考虑后者的王牌班。`;
+    }
+    if (a.flagship === "七龙珠" && primary.flagship !== "七龙珠") {
+      return `<h5>同档对比建议</h5>${a.name} 是七龙珠头部校，长期产出远超普通区重(${primary.name})；若你能稳进，<b>优先冲名校本部</b>而非降档进分校王牌班。`;
+    }
+  }
+
+  // 场景3: 主推是远郊分校,提醒看本部
+  if (primary.flagship && (primary.flagship.includes("体系")) && primary.cautions.length > 0) {
+    return `<h5>注意</h5>${primary.name} 是分校，主流共识认为"分校与本部清北产出差距大"。如分数足够，应优先考虑本部或同档名校。`;
+  }
+
+  return null;
+}
+
+/* ============================================================
+ * 主入口
+ * ============================================================ */
+function recommend() {
+  const score = parseFloat(document.getElementById("score").value);
+  const district = document.getElementById("district").value;
+  const prefer = document.getElementById("prefer").value;
+
+  if (!score || score < 300 || score > 750) {
+    alert("请输入合理的中考分数(300-750)");
+    return;
+  }
+
+  const filteredSchools = filterByPreference(SCHOOLS, district, prefer);
+
+  // 联招线兜底警告
+  const lowestLine = 532; // 2025联招送档线
+  let warningHTML = "";
+  if (score < lowestLine + 10) {
+    warningHTML = `<div class="warning-block">⚠ 你的分数 <b>${score}</b> 低于或接近2025年联招送档线(532)，<b>很可能无法被联招学校录取</b>，建议主要考虑非联招的普高、职高或自主招生学校。</div>`;
+  }
+
+  const html = ["<div class='summary-bar'>",
+    `<div class='stat'>你的分数<b>${score}</b></div>`,
+    `<div class='stat'>所在区<b>${district || "未选"}</b></div>`,
+    `<div class='stat'>2025送档线<b>532分</b></div>`,
+    `<div class='stat'>区域偏好<b>${ {all:"全市",local:"优先本区",local_strict:"只本/邻区"}[prefer] }</b></div>`,
+    "</div>", warningHTML];
+
+  // 一批次 + 二批次
+  for (const batch of [
+    { tier: 1, title: "第一批次平行志愿 — 市级重点中学", codePrefix: "1" },
+    { tier: 2, title: "第二批次平行志愿 — 普通联招学校", codePrefix: "2" },
+  ]) {
+    html.push(`<div class='batch-section'>`);
+    html.push(`<div class='batch-title'><span class='tag'>${batch.tier===1?'一批次':'二批次'}</span>${batch.title}</div>`);
+
+    // === 二批次走"安全梯队"模式:取用户可达的最高5所二批次校,按线降序 ===
+    if (batch.tier === 2) {
+      const ladder = pickTier2Ladder(score, district);
+      html.push(`<div style="font-size:12.5px;color:#5a4209;background:#fff7e8;padding:8px 12px;border-radius:6px;margin-bottom:10px;border-left:3px solid #f39c12;">
+        💡 <b>二批次说明</b>：普通联招校实际线大多集中在540-590，对中高分段考生几乎全是"保底"，套用冲稳保意义不大。本档按"<b>你能上的最高5所二批次校</b>"排序输出，第1所最高(微冲)，第5所最稳(兜底)。如本区学校少，已自动扩到全市。
+      </div>`);
+
+      if (ladder.length === 0) {
+        html.push(`<div class='empty-slot'>没有二批次学校在你的可达范围内 (line ≤ 你+5分)。可能你的分数低于所有二批次校线，建议关注非联招志愿。</div>`);
+      } else {
+        const ladderLabels = ["最高(微冲)", "次高", "中位", "次低", "最稳(兜底)"];
+        for (let idx = 0; idx < ladder.length; idx++) {
+          const s = ladder[idx];
+          const slot = {
+            code: `2${'ABCDE'[idx]}`,
+            name: idx <= 1 ? "冲" : idx <= 3 ? "稳" : "保",
+            level: idx <= 1 ? "chong" : idx <= 3 ? "wen" : "bao",
+            maxDiff: 5, minDiff: -120, offset: 0,
+            desc: `二批次第${idx+1}志愿 - ${ladderLabels[idx]}`,
+          };
+          html.push(`<div class='slot ${slot.level}'>`);
+          html.push(`<div class='slot-header'>`);
+          html.push(`<span class='slot-badge'>${slot.code} ${slot.name}</span>`);
+          html.push(`<span class='slot-code'>${slot.desc}</span>`);
+          html.push(`<span class='slot-rule'>预估线: ${s._est.value}分 (${s._diff>=0?'+':''}${s._diff.toFixed(0)})</span>`);
+          html.push(`</div>`);
+          html.push(renderSchoolCard(s, score, slot, true, ladder));
+          html.push(`</div>`);
+        }
+      }
+      html.push(`</div>`);
+      continue;
+    }
+
+    // === 一批次走原有冲稳保逻辑 ===
+    const pickedInBatch = new Set();  // 同批次内不重复选同一所学校
+    for (let i = 0; i < SLOT_DEFS.length; i++) {
+      const slot = { ...SLOT_DEFS[i], code: batch.codePrefix + SLOT_DEFS[i].code.slice(1) };
+      const cands = pickForSlot(filteredSchools, score, SLOT_DEFS[i], batch.tier, pickedInBatch);
+
+      html.push(`<div class='slot ${slot.level}'>`);
+      html.push(`<div class='slot-header'>`);
+      html.push(`<span class='slot-badge'>${slot.code} ${slot.name}</span>`);
+      html.push(`<span class='slot-code'>${slot.desc}</span>`);
+      html.push(`<span class='slot-rule'>硬上限: 学校线 ≤ 你${slot.maxDiff>=0?'+':''}${slot.maxDiff}分</span>`);
+      html.push(`</div>`);
+
+      // 1. 先列出该档全市可触及学校(按预估线降序)
+      const reachable = getAllReachableInSlot(SCHOOLS, score, SLOT_DEFS[i], batch.tier);
+      const primaryName = cands[0] ? cands[0].name : null;
+      html.push(renderReachableList(reachable, district, primaryName, SLOT_DEFS[i], score));
+
+      // 2. 再给推荐+备选
+      if (cands.length === 0) {
+        html.push(`<div class='empty-slot'>本区/邻区/全市该档均无匹配学校（上限严格不可突破）。可能原因：分数过高/过低致此档真空。</div>`);
+      } else {
+        const primary = cands[0];
+        const backups = cands.slice(1, 4);
+        // 扩展匹配提示
+        const notes = [];
+        if (primary._localTier === 0 && district && prefer !== "all") {
+          notes.push("本区/邻区在该档无学校,已扩展到<b>全市</b>");
+        } else if (primary._localTier === 1 && district) {
+          notes.push("本区在该档无学校,已扩展到<b>邻区</b>");
+        }
+        if (notes.length > 0) {
+          html.push(`<div style="font-size:12px;color:#b67400;background:#fff7e8;padding:5px 10px;border-radius:5px;margin-bottom:6px;">⚡ <b>扩展匹配</b>：${notes.join("；")}</div>`);
+        }
+        html.push(renderSchoolCard(primary, score, SLOT_DEFS[i], true, cands));
+        pickedInBatch.add(primary.name);  // 记录已选,防止后续档位重复
+        const compareNote = genCompareNote(primary, backups, SLOT_DEFS[i]);
+        if (compareNote) {
+          html.push(`<div class='compare-block'>${compareNote}</div>`);
+        }
+        for (const bk of backups) {
+          html.push(renderSchoolCard(bk, score, SLOT_DEFS[i], false, cands));
+        }
+      }
+      html.push(`</div>`);
+    }
+    html.push(`</div>`);
+  }
+
+  const results = document.getElementById("results");
+  results.innerHTML = html.join("");
+  results.classList.add("visible");
+  results.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderSchoolCard(s, userScore, slot, isPrimary, alts) {
+  const confLabel = { H: "多源验证", M: "单一来源", L: "论坛家长口径" }[s.conf];
+  const scoresStr = [2021,2022,2023,2024,2025]
+    .map(y => `${String(y).slice(2)}:${s.scores[y]??'—'}`).join(" / ");
+
+  const localTier = s._localTier;
+  const localBadge = localTier === 2
+    ? '<span style="background:#27ae60;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;">本区</span>'
+    : localTier === 1
+    ? '<span style="background:#f39c12;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;">邻区</span>'
+    : '<span style="background:#e74c3c;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;">远区</span>';
+
+  const tagsHTML = (s.tags || []).map(t => {
+    let cls = "tag-pill";
+    if (t.includes("七龙珠") || t.includes("四小金刚") || t.includes("清北")) cls += " flagship";
+    else if (t.includes("性价比")) cls += " value";
+    return `<span class='${cls}'>${t}</span>`;
+  }).join("") + (s.cautions || []).map(c =>
+    `<span class='tag-pill caution'>⚠ ${c}</span>`
+  ).join("");
+
+  const flagshipBox = (s.flagshipClass && s.flagshipClass !== "—")
+    ? `<div style="font-size:12.5px;color:#5a4209;background:#fff5e0;padding:6px 10px;border-radius:5px;margin:6px 0;">🏆 <b>${s.flagshipClass}</b>${s.classDetail?`：${s.classDetail}`:""}</div>`
+    : "";
+
+  // 参考校说明(仅当此校无历史数据,靠参考估算时显示)
+  const refInfo = s._est && s._est.referenceInfo;
+  const refBox = refInfo
+    ? (refInfo.school
+       ? `<div style="font-size:12.5px;color:#1f5fa8;background:#e8f3ff;padding:6px 10px;border-radius:5px;margin:6px 0;border-left:3px solid #2980b9;">📎 <b>本校无历史数据,按参考校估算</b>：参考 <b>${refInfo.school}</b>${refInfo.year?` ${refInfo.year}年线 <b>${refInfo.value}</b>`:''} ${refInfo.offset>=0?'+':''}${refInfo.offset} = <b>${refInfo.finalValue}</b>分</div>`
+       : `<div style="font-size:12.5px;color:#1f5fa8;background:#e8f3ff;padding:6px 10px;border-radius:5px;margin:6px 0;border-left:3px solid #2980b9;">📎 <b>本校无历史数据,按系列均线估算</b>：参考 <b>${refInfo.family}系列</b> ${refInfo.members.length}所均值 ${refInfo.avg.toFixed(0)} -8 = <b>${refInfo.finalValue}</b>分<div style="font-size:11px;color:#5a7a9a;margin-top:3px;">参考校：${refInfo.members.map(m=>`${m.name}(${m.line})`).join('、')}</div></div>`)
+    : "";
+
+  return `
+    <div class='school-card ${isPrimary?'primary':'backup'}'>
+      <div class='school-name'>
+        ${isPrimary?'<span class="pri-flag">推荐填报</span>':'<span class="bk-flag">备选</span>'}
+        <span>${s.name}</span>
+        ${localBadge}
+        ${s.flagship === "七龙珠" ? '<span class="seven">七龙珠</span>' : ''}
+        ${s.flagship === "四小金刚" ? '<span class="seven" style="background:#16a085">四小金刚</span>' : ''}
+        <span class='conf-${s.conf.toLowerCase()}' title='${confLabel}'>${s.conf}</span>
+      </div>
+      <div class='school-meta'>
+        <span>📍 ${s.district}</span>
+        <span>批次: ${s.tier===1?'一批次(市重)':'二批次(普通联招)'}</span>
+      </div>
+      <div class='scores-strip'>近5年: ${scoresStr}</div>
+      ${refBox}
+      ${flagshipBox}
+      <div class='reason'>${genReason(s, userScore, slot, isPrimary, alts)}</div>
+      ${tagsHTML ? `<div class='tags'>${tagsHTML}</div>` : ''}
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
